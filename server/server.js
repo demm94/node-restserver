@@ -1,49 +1,36 @@
-require('./config/config');
+require('./config/config'); // configuraciones del servidor
 
 const express = require('express');
+const mongoose = require('mongoose');
 const app = express();
 const bodyParser = require('body-parser');
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
-app.get('/usuario', function(req, res) {
-    // Se trabajará con JSON
-    res.json('GET USUARIO');
-});
+// exportamos y hacemos uso de las rutas de usuario
+app.use(require('./routes/usuario'));
 
-app.post('/usuario', function(req, res) {
-
-    let body = req.body;
-
-    if (body.nombre === undefined) {
-        res.status(400).json({
-            ok: false,
-            mensaje: 'El nombre es necesario'
+// Establecer conexión con BD
+const runDbConnect = async() => {
+    try {
+        await mongoose.connect(process.env.URLDB, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useFindAndModify: false,
+            useCreateIndex: true
         });
-    } else {
-        // Se trabajará con JSON
-        res.json({
-            persona: body
-        });
+        console.log("DB ONLINE!!");
+    } catch (e) {
+        console.log("Error en conexión DB, ", e);
     }
-});
+};
 
-app.put('/usuario/:id', function(req, res) {
-    let id = req.params.id;
-    // Se trabajará con JSON
-    res.json({
-        id
-    });
-});
+runDbConnect();
 
-app.delete('/usuario', function(req, res) {
-    // Se trabajará con JSON
-    res.json('DELETE USUARIO');
-});
 app.listen(process.env.PORT, () => {
     console.log(`Escuchando puerto -> ${process.env.PORT}`)
 });
